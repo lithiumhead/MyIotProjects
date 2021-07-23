@@ -103,7 +103,7 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
   - Get into `~/linux/drivers/iio/common/st_sensors/`
   - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
     ```
-
+    
     obj-m += st_sensors.o
     st_sensors-objs := st_sensors_core.o st_sensors_buffer.o st_sensors_trigger.o
 
@@ -116,7 +116,7 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
 
     clean:
         make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-
+    
     ```
   - Issue the `make` command while in `~/linux/drivers/iio/common/st_sensors/`
   - Copy the compiled kernel modules to the appropriate system path:
@@ -126,21 +126,21 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
   - Get into `~/linux/drivers/iio/pressure`
   - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
     ```
+    
+    KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
+    obj-m += st_pressure.o
+    st_pressure-objs := st_pressure_core.o st_pressure_buffer.o
 
-KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
-obj-m += st_pressure.o
-st_pressure-objs := st_pressure_core.o st_pressure_buffer.o
+    obj-m += st_pressure_i2c.o
 
-obj-m += st_pressure_i2c.o
+    obj-m += st_pressure_spi.o
 
-obj-m += st_pressure_spi.o
+    all:
+        make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-all:
-    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
-
-clean:
-    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
-
+    clean:
+        make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+    
     ```
   - Compile the driver, issue the `make` command while in `~/linux/drivers/iio/pressure`
   - Copy the compiled kernel modules to the appropriate system path:  
