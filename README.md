@@ -14,12 +14,12 @@ Some of the Node-RED projects also includes notes on Linux Kernel's [Industrial 
 
 ## Node-RED / Raspberry Pi
 
-	- [Waveshare Sense HAT (B) on Raspberry Pi](Node-RED/waveshare_sensehat_iio/README.md)  
-	  Notes on enabling Linux Industrial I/O kernel drivers on Raspberry Pi W Zero for the various
-	  I<sup>2</sup>C sensors present on the Waveshare Electronics's Sense HAT (B).
+- [Waveshare Sense HAT (B) on Raspberry Pi](Node-RED/waveshare_sensehat_iio/README.md)  
+  Notes on enabling Linux Industrial I/O kernel drivers on Raspberry Pi W Zero for the various
+  I<sup>2</sup>C sensors present on the Waveshare Electronics's Sense HAT (B).
 
 
 ## OpenWrt
 
-	- [Ambient Sensors / adafruit.io ](OpenWrt/linkit7688_ambient/README.md)  
-	  This project uses a (MediaTek LinkIt Smart 7688 Duo)[https://labs.mediatek.com/en/platform/linkit-smart-7688] and DHT11 sensor to send temperature and humidity readings to adafruit.io. The code is an Arduino sketch that runs on the microcontroller on-board the LinkIt 7688 Duo board.
+- [Ambient Sensors / adafruit.io](OpenWrt/linkit7688_ambient/README.md)  
+  This project uses a (MediaTek LinkIt Smart 7688 Duo)[https://labs.mediatek.com/en/platform/linkit-smart-7688] and DHT11 sensor to send temperature and humidity readings to adafruit.io. The code is an Arduino sketch that runs on the microcontroller on-board the LinkIt 7688 Duo board.
