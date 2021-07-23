@@ -102,22 +102,22 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
 - Compile st_sensors kernel module
   - Get into `~/linux/drivers/iio/common/st_sensors/`
   - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
-  ```
+```
 
-	obj-m += st_sensors.o
-	st_sensors-objs := st_sensors_core.o st_sensors_buffer.o st_sensors_trigger.o
+obj-m += st_sensors.o
+st_sensors-objs := st_sensors_core.o st_sensors_buffer.o st_sensors_trigger.o
 
-	obj-m += st_sensors_i2c.o
+obj-m += st_sensors_i2c.o
 
-	obj-m += st_sensors_spi.o
+obj-m += st_sensors_spi.o
 
-	all:
-	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+all:
+    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-	clean:
-	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+clean:
+    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-  ```
+```
   - Issue the `make` command while in `~/linux/drivers/iio/common/st_sensors/`
   - Copy the compiled kernel modules to the appropriate system path:
     - `sudo mkdir /lib/modules/$(uname -r)/kernel/drivers/iio/common/st_sensors/`
@@ -125,23 +125,23 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
 - Compile st_pressure kernel module
   - Get into `~/linux/drivers/iio/pressure`
   - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
-  ```
+```
 
-	KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
-	obj-m += st_pressure.o
-	st_pressure-objs := st_pressure_core.o st_pressure_buffer.o
+KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
+obj-m += st_pressure.o
+st_pressure-objs := st_pressure_core.o st_pressure_buffer.o
 
-	obj-m += st_pressure_i2c.o
+obj-m += st_pressure_i2c.o
 
-	obj-m += st_pressure_spi.o
+obj-m += st_pressure_spi.o
 
-	all:
-	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+all:
+    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-	clean:
-	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+clean:
+    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-	```
+```
   - Compile the driver, issue the `make` command while in `~/linux/drivers/iio/pressure`
   - Copy the compiled kernel modules to the appropriate system path:  
     `sudo cp ~/linux/drivers/iio/pressure/*.ko /lib/modules/$(uname -r)/kernel/drivers/iio/pressure/`
@@ -149,32 +149,32 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
     - `cd /lib/modules/$(uname -r)`
     - `sudo depmod`
 - Add and activate Device Tree Blob:
-  - Create a file ~/lps22hb.dts with
-		```
-		// Definitions for LPS22HB Barometric Pressure and Temperature Sensor from STMicroelectronics
-		/dts-v1/;
-		/plugin/;
+  - Create a file ~/lps22hb.dts with  
+```
+// Definitions for LPS22HB Barometric Pressure and Temperature Sensor from STMicroelectronics
+/dts-v1/;
+/plugin/;
 
-		/ {
-		        compatible = "brcm,bcm2708";
+/ {
+        compatible = "brcm,bcm2708";
 
-		        fragment@0 {
-		                target = <&i2c1>;
-		                __overlay__ {
-		                        #address-cells = <1>;
-		                        #size-cells = <0>;
-		                        status = "okay";
+        fragment@0 {
+                target = <&i2c1>;
+                __overlay__ {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        status = "okay";
 
-		                        lps22hb3@5c {
-		                                compatible = "st,lps22hb-press";
-		                                reg = <0x5c>;
-		                                interrupt-parent = <&gpio>;
-		                               interrupts = <25 1>;
-		                        };
-		                };
-		        };
-		};
-		```
+                        lps22hb3@5c {
+                                compatible = "st,lps22hb-press";
+                                reg = <0x5c>;
+                                interrupt-parent = <&gpio>;
+                               interrupts = <25 1>;
+                        };
+                };
+        };
+};
+```
 	- `sudo dtc -I dts -O dtb -o /boot/overlays/lps22hb.dtbo -b 0 -@ ~/lps22hb.dts`
   - `sudo nano /boot/config.txt`
   - Add `dtoverlay=lps22hb` at the end, save and reboot.
