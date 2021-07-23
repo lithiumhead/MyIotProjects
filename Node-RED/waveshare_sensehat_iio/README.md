@@ -3,6 +3,9 @@
 Sense HAT (B) is a plugin board for Raspberry Pi that has a bunch of sensors for measuring
 temperature, pressure, humidity, orientation and color.
 
+![Uninstalled](waveshare_sensehat_iio_01.jpg)
+![Installed](waveshare_sensehat_iio_02.jpg)
+
 Links to official documentation:
 
 - https://www.waveshare.com/wiki/Sense_HAT_(B)
