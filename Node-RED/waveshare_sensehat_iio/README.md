@@ -8,7 +8,6 @@ Links to official documentation:
 - https://www.waveshare.com/wiki/Sense_HAT_(B)
 - https://www.waveshare.com/w/upload/4/43/Sense-HAT-B-Schematic.pdf
 
-
 ## List of I²C Sensors on the Sense HAT (B)
 
 ```
@@ -62,7 +61,7 @@ pi@IotRpi0wSenseHat:~ $ sudo i2cdetect -y 1
 
 ### ADS1015
 
-Raspberry Pi OS ships with the kernel module blob for ADS1015, we just have to enable it by editing `/boot/config.txt` and append `dtoverlay=ads1015,addr=0x48` to the end. Save and Reboot.
+Raspberry Pi OS ships with the external kernel modules and a corresponding device tree blob for the ADS1015 IIO driver, we just have to enable it by editing `/boot/config.txt` and append `dtoverlay=ads1015,addr=0x48` to the end. Save and Reboot.
 
 Test:
 
@@ -88,17 +87,127 @@ in_voltage1-voltage3_raw                 trigger
 in_voltage1-voltage3_sampling_frequency  uevent
 in_voltage1-voltage3_scale
 ```
+
 ### ICM-20948
 
 No kernel support exists for ICM-20948 in the mainline source tree.
 
 ### LPS22HB
 
+Raspberry Pi OS does not ship with the external kernel modules for for the LPS22HB IIO driver, but the Raspberry Pi OS repo has the sources for the IIO driver. We can compile the driver from the sources, add a device tree blob to enable the driver.
+
+- Get the kernel source code
+  - `sudo apt install git bc bison flex libssl-dev make raspberrypi-kernel-headers`
+  - `git clone --depth=1 https://github.com/raspberrypi/linux`
+- Compile st_sensors kernel module
+  - Get into `~/linux/drivers/iio/common/st_sensors/`
+  - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):
+  ```
+
+	obj-m += st_sensors.o
+	st_sensors-objs := st_sensors_core.o st_sensors_buffer.o st_sensors_trigger.o
+
+	obj-m += st_sensors_i2c.o
+
+	obj-m += st_sensors_spi.o
+
+	all:
+	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+	clean:
+	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+  ```
+  - Issue the `make` command while in `~/linux/drivers/iio/common/st_sensors/`
+  - Copy the compiled kernel modules to the appropriate system path:
+    - `sudo mkdir /lib/modules/$(uname -r)/kernel/drivers/iio/common/st_sensors/`
+    - `sudo cp ~/linux/drivers/iio/common/st_sensors/*.ko /lib/modules/$(uname -r)/kernel/drivers/iio/common/st_sensors/`
+- Compile st_pressure kernel module
+  - Get into `~/linux/drivers/iio/pressure`
+  - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):
+  ```
+
+	KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
+	obj-m += st_pressure.o
+	st_pressure-objs := st_pressure_core.o st_pressure_buffer.o
+
+	obj-m += st_pressure_i2c.o
+
+	obj-m += st_pressure_spi.o
+
+	all:
+	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+
+	clean:
+	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+
+	```
+  - Compile the driver, issue the `make` command while in `~/linux/drivers/iio/pressure`
+  - Copy the compiled kernel modules to the appropriate system path:  
+    `sudo cp ~/linux/drivers/iio/pressure/*.ko /lib/modules/$(uname -r)/kernel/drivers/iio/pressure/`
+  - Update Symbol Table:  
+    - `cd /lib/modules/$(uname -r)`
+    - `sudo depmod`
+- Add and activate Device Tree Blob:
+  - Create a file ~/lps22hb.dts with
+		```
+		// Definitions for LPS22HB Barometric Pressure and Temperature Sensor from STMicroelectronics
+		/dts-v1/;
+		/plugin/;
+
+		/ {
+		        compatible = "brcm,bcm2708";
+
+		        fragment@0 {
+		                target = <&i2c1>;
+		                __overlay__ {
+		                        #address-cells = <1>;
+		                        #size-cells = <0>;
+		                        status = "okay";
+
+		                        lps22hb3@5c {
+		                                compatible = "st,lps22hb-press";
+		                                reg = <0x5c>;
+		                                interrupt-parent = <&gpio>;
+		                               interrupts = <25 1>;
+		                        };
+		                };
+		        };
+		};
+		```
+	- `sudo dtc -I dts -O dtb -o /boot/overlays/lps22hb.dtbo -b 0 -@ ~/lps22hb.dts`
+  - `sudo nano /boot/config.txt`
+  - Add `dtoverlay=lps22hb` at the end, save and reboot.
+- Test:
+```
+pi@IotRpi0wSenseHat:~ $ ls /sys/bus/iio/devices/iio:device1
+buffer                   in_temp_scale                 scan_elements
+current_timestamp_clock  name                          subsystem
+dev                      of_node                       trigger
+in_pressure_raw          power                         uevent
+in_pressure_scale        sampling_frequency
+in_temp_raw              sampling_frequency_available
+
+pi@IotRpi0wSenseHat:~ $ cat /sys/bus/iio/devices/iio:device1/in_temp_raw
+2843
+pi@IotRpi0wSenseHat:~ $ cat /sys/bus/iio/devices/iio:device1/in_pressure_raw
+3859171
+pi@IotRpi0wSenseHat:~ $ cat /sys/bus/iio/devices/iio:device1/in_pressure_scale
+0.000024414
+
+pi@IotRpi0wSenseHat:~ $ echo "$(cat /sys/bus/iio/devices/iio:device1/in_temp_raw) * 0.01" | bc # in degree Celsius
+28.32
+
+pi@IotRpi0wSenseHat:~ $ echo "$(cat /sys/bus/iio/devices/iio:device1/in_pressure_raw) * $(cat /sys/bus/iio/devices/iio:device1/in_pressure_scale)" | bc # in hectopascals
+94.178421012
+```
+
 ### SHTC3
 
-- Add and activate Device Tree Blob:
+Raspberry Pi OS ships with the external kernel modules for the SHTC3 IIO driver, but it does not come with a device tree blob so to load and enable the kernel module, we must first add a device tree blob.
+
+- Install Linux-monitoring sensors  
   `sudo apt-get install lm-sensors`
-- Add and activate Device Tree Blob:
+- Add and activate Device Tree Blob
   - Create a file `~/shtc3.dts` with
 	  ```
 		// Definitions for SHTC3 Humidity and Temperature Sensor from Sensirion AG
@@ -125,11 +234,12 @@ No kernel support exists for ICM-20948 in the mainline source tree.
 		        };
 		};
 	  ```
-  - Execute the commands:
-    - `sudo dtc -I dts -O dtb -o /boot/overlays/shtc3.dtbo -b 0 -@ ~/shtc3.dts`
+  - Execute the commands:  
+    `sudo dtc -I dts -O dtb -o /boot/overlays/shtc3.dtbo -b 0 -@ ~/shtc3.dts`
   - `sudo nano /boot/config.txt` and append `dtoverlay=shtc3` to the end, save and reboot
   - Test:
 		```
+
 		pi@IotRpi0wSenseHat:~ $ sensors
 		shtc3-i2c-1-70
 		Adapter: bcm2835 (i2c@7e804000)
@@ -164,7 +274,7 @@ No kernel support exists for TC34725 in the mainline source tree.
   - [Device Tree Documentation](https://github.com/raspberrypi/linux/blob/rpi-5.10.y/Documentation/devicetree/bindings/iio/st-sensors.txt)
   - [Original Sources from STMicroelectronics](https://github.com/STMicroelectronics/STMems_Linux_Input_drivers)
 - SHTC3
-  - Location to the driver in the kernel
+  - Does not have IIO support, but has [hwmon](https://www.kernel.org/doc/html/latest/hwmon/hwmon-kernel-api.html) support:
     - https://github.com/raspberrypi/linux/blob/rpi-5.10.y/drivers/hwmon/shtc1.c
     - https://www.kernel.org/doc/html/v5.5/hwmon/shtc1.html
     - https://www.kernel.org/doc/Documentation/devicetree/bindings/hwmon/sensirion%2Cshtc1.yaml
