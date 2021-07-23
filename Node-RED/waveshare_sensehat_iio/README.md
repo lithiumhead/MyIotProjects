@@ -9,7 +9,7 @@ Links to official documentation:
 - https://www.waveshare.com/w/upload/4/43/Sense-HAT-B-Schematic.pdf
 
 
-## List of I²C Sensors on the Sense HAT(B)
+## List of I²C Sensors on the Sense HAT (B)
 
 ```
 pi@IotRpi0wSenseHat:~ $ sudo i2cdetect -y 1
@@ -61,6 +61,34 @@ pi@IotRpi0wSenseHat:~ $ sudo i2cdetect -y 1
 ## Enabling Industrial I/O (IIO) Kernel Drivers
 
 ### ADS1015
+
+Raspberry Pi OS ships with the kernel module blob for ADS1015, we just have to enable it by editing `/boot/config.txt` and append `dtoverlay=ads1015,addr=0x48` at the end. Save and Reboot.
+
+Test:
+
+```
+pi@IotRpi0wSenseHat:~ $ ls /sys/bus/iio/devices/iio:device0
+buffer                                   in_voltage2_raw
+current_timestamp_clock                  in_voltage2_sampling_frequency
+dev                                      in_voltage2_scale
+events                                   in_voltage2-voltage3_raw
+in_voltage0_raw                          in_voltage2-voltage3_sampling_frequency
+in_voltage0_sampling_frequency           in_voltage2-voltage3_scale
+in_voltage0_scale                        in_voltage3_raw
+in_voltage0-voltage1_raw                 in_voltage3_sampling_frequency
+in_voltage0-voltage1_sampling_frequency  in_voltage3_scale
+in_voltage0-voltage1_scale               name
+in_voltage0-voltage3_raw                 of_node
+in_voltage0-voltage3_sampling_frequency  power
+in_voltage0-voltage3_scale               sampling_frequency_available
+in_voltage1_raw                          scale_available
+in_voltage1_sampling_frequency           scan_elements
+in_voltage1_scale                        subsystem
+in_voltage1-voltage3_raw                 trigger
+in_voltage1-voltage3_sampling_frequency  uevent
+in_voltage1-voltage3_scale
+```
+
 
 ### ICM-20948
 
