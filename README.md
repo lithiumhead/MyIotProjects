@@ -12,11 +12,19 @@ Some of the Node-RED projects also includes notes on Linux Kernel's [Industrial 
 
 ## ESP8266 / Arduino
 
+- [Classroom Timer](ESP8266/classroom_timer/README.md)  
+  This project uses a big 7 Segment LED display to show a timer that can be controlled over WiFi using a web browser on a smart phone. An Arduino Sketch turns ESP8266 into a WiFI AP and serves a webpage through which one can start/stop the timer.
+
+- [LED Dimmer](ESP8266/led_dimmer/README.md)  
+  This project uses a PWM controlled LED driver that can be configured over WiFi using a web browser on a smart phone. An Arduino Sketch turns ESP8266 into a WiFI AP and serves a webpage through which one can set the brigtnness of the LED.
+
+- [Bulb Dimmer](ESP8266/bulb_dimmer/README.md)  
+  This project uses a UART controlled Dimmer Module that can be configured over WiFi using a web browser on a smart phone. An Arduino Sketch turns ESP8266 into a WiFI AP and serves a webpage through which one can set the brightnness of an incandescent light bulb.
+
 ## Node-RED / Raspberry Pi
 
 - [Waveshare Sense HAT (B) on Raspberry Pi](Node-RED/waveshare_sensehat_iio/README.md)  
-  Notes on enabling Linux Industrial I/O kernel drivers on Raspberry Pi W Zero for the various
-  I<sup>2</sup>C sensors present on the Waveshare Electronics's Sense HAT (B).
+  Notes on enabling Linux Industrial I/O kernel drivers on Raspberry Pi W Zero for the various I<sup>2</sup>C sensors present on the Waveshare Electronics's Sense HAT (B).
 
 
 ## OpenWrt
