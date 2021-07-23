@@ -46,23 +46,23 @@ pi@IotRpi0wSenseHat:~ $ sudo i2cdetect -y 1
 
 ## Basic Setup for IIO + Node-RED
 
- 1. Prepare microSD Card with Lite edition of Raspberry Pi OS 32bit
- 2. Create blank file named “ssh” in boot partition before moving microSD card to RPi
+ 1. Prepare microSD Card with Lite edition of Raspberry Pi OS 32 bit
+ 2. Create blank file named `ssh` in boot partition before moving microSD card to RPi
  3. Connect RPi to network using USB Ethernet Dongle and access it over LAN
- 4. Using using raspi-config configure country, Timezone and WiFi and enable I²C
+ 4. Using using `raspi-config` configure country, Timezone and WiFi and enable I²C
  5. Disable WiFi Power Saving
- 6. Change hostname ( /etc/hostname and /etc/hosts) - don’t change it after this otherwise NodeRED flows disappear.
+ 6. Change hostname (`/etc/hostname` and `/etc/hosts`) - don’t change it after this otherwise NodeRED flows disappear.
  7. Set new password
  8. Reboot
  9. Update OS
  10. Install Node-RED
- 11. sudo apt-get install i2c-tools
+ 11. `sudo apt-get install i2c-tools`
 
 ## Enabling Industrial I/O (IIO) Kernel Drivers
 
 ### ADS1015
 
-Raspberry Pi OS ships with the kernel module blob for ADS1015, we just have to enable it by editing `/boot/config.txt` and append `dtoverlay=ads1015,addr=0x48` at the end. Save and Reboot.
+Raspberry Pi OS ships with the kernel module blob for ADS1015, we just have to enable it by editing `/boot/config.txt` and append `dtoverlay=ads1015,addr=0x48` to the end. Save and Reboot.
 
 Test:
 
@@ -88,15 +88,70 @@ in_voltage1-voltage3_raw                 trigger
 in_voltage1-voltage3_sampling_frequency  uevent
 in_voltage1-voltage3_scale
 ```
-
-
 ### ICM-20948
+
+No kernel support exists for ICM-20948 in the mainline source tree.
 
 ### LPS22HB
 
 ### SHTC3
 
+- Add and activate Device Tree Blob:
+  `sudo apt-get install lm-sensors`
+- Add and activate Device Tree Blob:
+  - Create a file `~/shtc3.dts` with
+	  ```
+		// Definitions for SHTC3 Humidity and Temperature Sensor from Sensirion AG
+		/dts-v1/;
+		/plugin/;
+
+		/ {
+		        compatible = "brcm,bcm2708";
+
+		        fragment@0 {
+		                target = <&i2c1>;
+		                __overlay__ {
+		                        #address-cells = <1>;
+		                        #size-cells = <0>;
+		                        clock-frequency = <400000>;
+		                        status = "okay";
+
+		                        shtc3@70 {
+		                                compatible = "sensirion,shtc3";
+		                                reg = <0x70>;
+		                                sensirion,blocking-io;
+		                        };
+		                };
+		        };
+		};
+	  ```
+  - Execute the commands:
+    - `sudo dtc -I dts -O dtb -o /boot/overlays/shtc3.dtbo -b 0 -@ ~/shtc3.dts`
+  - `sudo nano /boot/config.txt` and append `dtoverlay=shtc3` to the end, save and reboot
+  - Test:
+		```
+		pi@IotRpi0wSenseHat:~ $ sensors
+		shtc3-i2c-1-70
+		Adapter: bcm2835 (i2c@7e804000)
+		temp1:        +27.8°C
+		humidity1:     72.8 %RH
+
+		cpu_thermal-virtual-0
+		Adapter: Virtual device
+		temp1:        +30.4°C
+
+		rpi_volt-isa-0000
+		Adapter: ISA adapter
+		in0:              N/A
+
+		pi@IotRpi0wSenseHat:~ $ cat /sys/bus/i2c/devices/1-0070/hwmon/hwmon2/humidity1_input
+		72772
+		pi@IotRpi0wSenseHat:~ $ cat /sys/bus/i2c/devices/1-0070/hwmon/hwmon2/temp1_input
+		27824
+		```
 ### TC34725
+
+No kernel support exists for TC34725 in the mainline source tree.
 
 ### Notes on IIO support for the various sensors
 
