@@ -102,22 +102,22 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
 - Compile st_sensors kernel module
   - Get into `~/linux/drivers/iio/common/st_sensors/`
   - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
-```
+    ```
 
-obj-m += st_sensors.o
-st_sensors-objs := st_sensors_core.o st_sensors_buffer.o st_sensors_trigger.o
+    obj-m += st_sensors.o
+    st_sensors-objs := st_sensors_core.o st_sensors_buffer.o st_sensors_trigger.o
 
-obj-m += st_sensors_i2c.o
+    obj-m += st_sensors_i2c.o
 
-obj-m += st_sensors_spi.o
+    obj-m += st_sensors_spi.o
 
-all:
-    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+    all:
+        make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-clean:
-    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+    clean:
+        make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-```
+    ```
   - Issue the `make` command while in `~/linux/drivers/iio/common/st_sensors/`
   - Copy the compiled kernel modules to the appropriate system path:
     - `sudo mkdir /lib/modules/$(uname -r)/kernel/drivers/iio/common/st_sensors/`
@@ -125,7 +125,7 @@ clean:
 - Compile st_pressure kernel module
   - Get into `~/linux/drivers/iio/pressure`
   - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
-```
+    ```
 
 KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
 obj-m += st_pressure.o
@@ -141,7 +141,7 @@ all:
 clean:
     make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-```
+    ```
   - Compile the driver, issue the `make` command while in `~/linux/drivers/iio/pressure`
   - Copy the compiled kernel modules to the appropriate system path:  
     `sudo cp ~/linux/drivers/iio/pressure/*.ko /lib/modules/$(uname -r)/kernel/drivers/iio/pressure/`
@@ -149,33 +149,33 @@ clean:
     - `cd /lib/modules/$(uname -r)`
     - `sudo depmod`
 - Add and activate Device Tree Blob:
-  - Create a file ~/lps22hb.dts with  
-```
-// Definitions for LPS22HB Barometric Pressure and Temperature Sensor from STMicroelectronics
-/dts-v1/;
-/plugin/;
+  - Create a file `~/lps22hb.dts` with  
+    ```
+    // Definitions for LPS22HB Barometric Pressure and Temperature Sensor from STMicroelectronics
+    /dts-v1/;
+    /plugin/;
 
-/ {
-        compatible = "brcm,bcm2708";
+    / {
+            compatible = "brcm,bcm2708";
 
-        fragment@0 {
-                target = <&i2c1>;
-                __overlay__ {
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                        status = "okay";
+            fragment@0 {
+                    target = <&i2c1>;
+                    __overlay__ {
+                            #address-cells = <1>;
+                            #size-cells = <0>;
+                            status = "okay";
 
-                        lps22hb3@5c {
-                                compatible = "st,lps22hb-press";
-                                reg = <0x5c>;
-                                interrupt-parent = <&gpio>;
-                               interrupts = <25 1>;
-                        };
-                };
-        };
-};
-```
-	- `sudo dtc -I dts -O dtb -o /boot/overlays/lps22hb.dtbo -b 0 -@ ~/lps22hb.dts`
+                            lps22hb3@5c {
+                                    compatible = "st,lps22hb-press";
+                                    reg = <0x5c>;
+                                    interrupt-parent = <&gpio>;
+                                   interrupts = <25 1>;
+                            };
+                    };
+            };
+    };
+    ```
+  - `sudo dtc -I dts -O dtb -o /boot/overlays/lps22hb.dtbo -b 0 -@ ~/lps22hb.dts`
   - `sudo nano /boot/config.txt`
   - Add `dtoverlay=lps22hb` at the end, save and reboot.
 - Test:
@@ -210,55 +210,56 @@ Raspberry Pi OS ships with the external kernel modules for the SHTC3, but it doe
   `sudo apt-get install lm-sensors`
 - Add and activate Device Tree Blob
   - Create a file `~/shtc3.dts` with
-	  ```
-		// Definitions for SHTC3 Humidity and Temperature Sensor from Sensirion AG
-		/dts-v1/;
-		/plugin/;
+    ```
+    // Definitions for SHTC3 Humidity and Temperature Sensor from Sensirion AG
+    /dts-v1/;
+    /plugin/;
 
-		/ {
-		        compatible = "brcm,bcm2708";
+    / {
+            compatible = "brcm,bcm2708";
 
-		        fragment@0 {
-		                target = <&i2c1>;
-		                __overlay__ {
-		                        #address-cells = <1>;
-		                        #size-cells = <0>;
-		                        clock-frequency = <400000>;
-		                        status = "okay";
+            fragment@0 {
+                    target = <&i2c1>;
+                    __overlay__ {
+                            #address-cells = <1>;
+                            #size-cells = <0>;
+                            clock-frequency = <400000>;
+                            status = "okay";
 
-		                        shtc3@70 {
-		                                compatible = "sensirion,shtc3";
-		                                reg = <0x70>;
-		                                sensirion,blocking-io;
-		                        };
-		                };
-		        };
-		};
-	  ```
+                            shtc3@70 {
+                                    compatible = "sensirion,shtc3";
+                                    reg = <0x70>;
+                                    sensirion,blocking-io;
+                            };
+                    };
+            };
+    };
+    ```
   - Execute the command:  
     `sudo dtc -I dts -O dtb -o /boot/overlays/shtc3.dtbo -b 0 -@ ~/shtc3.dts`
   - `sudo nano /boot/config.txt` and append `dtoverlay=shtc3` to the end, save and reboot
   - Test:  
-		```
-		pi@IotRpi0wSenseHat:~ $ sensors
-		shtc3-i2c-1-70
-		Adapter: bcm2835 (i2c@7e804000)
-		temp1:        +27.8°C
-		humidity1:     72.8 %RH
+    ```
+    pi@IotRpi0wSenseHat:~ $ sensors
+    shtc3-i2c-1-70
+    Adapter: bcm2835 (i2c@7e804000)
+    temp1:        +27.8°C
+    humidity1:     72.8 %RH
 
-		cpu_thermal-virtual-0
-		Adapter: Virtual device
-		temp1:        +30.4°C
+    cpu_thermal-virtual-0
+    Adapter: Virtual device
+    temp1:        +30.4°C
 
-		rpi_volt-isa-0000
-		Adapter: ISA adapter
-		in0:              N/A
+    rpi_volt-isa-0000
+    Adapter: ISA adapter
+    in0:              N/A
 
-		pi@IotRpi0wSenseHat:~ $ cat /sys/bus/i2c/devices/1-0070/hwmon/hwmon2/humidity1_input
-		72772
-		pi@IotRpi0wSenseHat:~ $ cat /sys/bus/i2c/devices/1-0070/hwmon/hwmon2/temp1_input
-		27824
-		```
+    pi@IotRpi0wSenseHat:~ $ cat /sys/bus/i2c/devices/1-0070/hwmon/hwmon2/humidity1_input
+    72772
+    pi@IotRpi0wSenseHat:~ $ cat /sys/bus/i2c/devices/1-0070/hwmon/hwmon2/temp1_input
+    27824
+    ```
+
 ### TC34725
 
 No kernel support exists for TC34725 in the mainline source tree.
