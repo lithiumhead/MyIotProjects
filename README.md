@@ -8,7 +8,7 @@ projects that I have put together over the years. The projects are usually based
  - OpenWrt flashed one of the off the shelf routers or a maker friendly development board
 
 The projects are grouped under the three folders corresponding to each of the above platforms.
-Some of the Node-RED projects also includes notes on Linux Kernel's [Industrial I/O](https://www.kernel.org/doc/html/latest/driver-api/iio/index.html) and [Home Assistant](https://www.home-assistant.io/) / [ESPHome](https://esphome.io/)
+Some of the Node-RED projects also includes notes on Linux Kernel's [Industrial I/O subsystem](https://www.kernel.org/doc/html/latest/driver-api/iio/index.html) and [Home Assistant](https://www.home-assistant.io/) / [ESPHome](https://esphome.io/)
 
 ## ESP8266 / Arduino
 

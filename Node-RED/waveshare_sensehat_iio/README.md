@@ -57,7 +57,7 @@ pi@IotRpi0wSenseHat:~ $ sudo i2cdetect -y 1
  10. Install Node-RED
  11. `sudo apt-get install i2c-tools`
 
-## Enabling Industrial I/O (IIO) Kernel Drivers
+## Enabling Kernel Drivers for the various sensors
 
 ### ADS1015
 
@@ -101,7 +101,7 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
   - `git clone --depth=1 https://github.com/raspberrypi/linux`
 - Compile st_sensors kernel module
   - Get into `~/linux/drivers/iio/common/st_sensors/`
-  - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):
+  - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
   ```
 
 	obj-m += st_sensors.o
@@ -116,6 +116,7 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
 
 	clean:
 	    make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+
   ```
   - Issue the `make` command while in `~/linux/drivers/iio/common/st_sensors/`
   - Copy the compiled kernel modules to the appropriate system path:
@@ -123,7 +124,7 @@ Raspberry Pi OS does not ship with the external kernel modules for for the LPS22
     - `sudo cp ~/linux/drivers/iio/common/st_sensors/*.ko /lib/modules/$(uname -r)/kernel/drivers/iio/common/st_sensors/`
 - Compile st_pressure kernel module
   - Get into `~/linux/drivers/iio/pressure`
-  - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):
+  - And modify the Makefile present there for the LPS22HB driver to compile on and for Raspberry Pi platform (replace spaces with tab):  
   ```
 
 	KBUILD_EXTRA_SYMBOLS:=~/linux/drivers/iio/common/st_sensors/Module.symvers
@@ -203,7 +204,7 @@ pi@IotRpi0wSenseHat:~ $ echo "$(cat /sys/bus/iio/devices/iio:device1/in_pressure
 
 ### SHTC3
 
-Raspberry Pi OS ships with the external kernel modules for the SHTC3 IIO driver, but it does not come with a device tree blob so to load and enable the kernel module, we must first add a device tree blob.
+Raspberry Pi OS ships with the external kernel modules for the SHTC3, but it does not come with a device tree blob so to load and enable the kernel module, we must first add a device tree blob. The kernel modules for SHTC3 use [The Linux Hardware Monitoring kernel API](https://www.kernel.org/doc/html/latest/hwmon/hwmon-kernel-api.html) instead of the Industrial I/O subsystem.
 
 - Install Linux-monitoring sensors  
   `sudo apt-get install lm-sensors`
@@ -234,12 +235,11 @@ Raspberry Pi OS ships with the external kernel modules for the SHTC3 IIO driver,
 		        };
 		};
 	  ```
-  - Execute the commands:  
+  - Execute the command:  
     `sudo dtc -I dts -O dtb -o /boot/overlays/shtc3.dtbo -b 0 -@ ~/shtc3.dts`
   - `sudo nano /boot/config.txt` and append `dtoverlay=shtc3` to the end, save and reboot
-  - Test:
+  - Test:  
 		```
-
 		pi@IotRpi0wSenseHat:~ $ sensors
 		shtc3-i2c-1-70
 		Adapter: bcm2835 (i2c@7e804000)
