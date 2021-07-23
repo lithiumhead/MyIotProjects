@@ -23,23 +23,23 @@ pi@IotRpi0wSenseHat:~ $ sudo i2cdetect -y 1
 70: 70 -- -- -- -- -- -- --
 ```
 
- 1. Texas Instruments ADS1015
+ 1. Texas Instruments [ADS1015](https://www.ti.com/lit/ds/symlink/ads1015.pdf)
     - 3.3-kSPS, 12-Bit ADC, 4 Channel
     - I²C address: 0x48
- 2. TDK InvenSense ICM-20948
+ 2. TDK InvenSense [ICM-20948](https://invensense.tdk.com/wp-content/uploads/2016/06/DS-000189-ICM-20948-v1.3.pdf)
     - Accelerometer
     - Gyroscope
     - Magnetometer
     - I²C address: 0x68
- 3. STMicroelectronics LPS22HB
+ 3. STMicroelectronics [LPS22HB](https://www.st.com/resource/en/datasheet/dm00140895.pdf)
     - 24 bit MEMS 260-1260 hPa absolute digital output barometer
     - 16 bit Temperature Sensor
     - I²C address: 0x5C
- 4. Sensirion AG SHTC3
+ 4. Sensirion AG [SHTC3](https://www.mouser.com/datasheet/2/682/Sensirion_04202018_HT_DS_SHTC3_Preliminiary_D2-1323493.pdf)
     - Temperature
     - Relative Humidity
     - I²C address: 0x70
- 5. Taos TC34725
+ 5. Taos [TC34725](https://cdn-shop.adafruit.com/datasheets/TCS34725.pdf)
     - Color sensor
     - I²C address: 0x29
 
@@ -198,7 +198,8 @@ pi@IotRpi0wSenseHat:~ $ cat /sys/bus/iio/devices/iio:device1/in_pressure_scale
 pi@IotRpi0wSenseHat:~ $ echo "$(cat /sys/bus/iio/devices/iio:device1/in_temp_raw) * 0.01" | bc # in degree Celsius
 28.32
 
-pi@IotRpi0wSenseHat:~ $ echo "$(cat /sys/bus/iio/devices/iio:device1/in_pressure_raw) * $(cat /sys/bus/iio/devices/iio:device1/in_pressure_scale)" | bc # in hectopascals
+pi@IotRpi0wSenseHat:~ $ echo "$(cat /sys/bus/iio/devices/iio:device1/in_pressure_raw) * \
+$(cat /sys/bus/iio/devices/iio:device1/in_pressure_scale)" | bc # in hectopascals
 94.178421012
 ```
 
